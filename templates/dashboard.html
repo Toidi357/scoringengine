@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scoring Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: #e0e0e0; padding: 40px; }
+        h1 { color: #00d4ff; text-transform: uppercase; letter-spacing: 2px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; padding: 15px; color: #888; text-transform: uppercase; font-size: 0.8em; }
+        td { padding: 15px; background: #1a1a1a; border-top: 1px solid #333; border-bottom: 1px solid #333; }
+        td:first-child { border-left: 1px solid #333; border-radius: 8px 0 0 8px; }
+        td:last-child { border-right: 1px solid #333; border-radius: 0 8px 8px 0; }
+        
+        .pip-container { display: flex; gap: 6px; }
+        .pip { 
+            width: 20px; height: 20px; border-radius: 4px; 
+            cursor: help; transition: transform 0.2s;
+        }
+        .pip:hover { transform: scale(1.2); z-index: 10; }
+        .up { background-color: #2ecc71; box-shadow: 0 0 8px rgba(46, 204, 113, 0.3); }
+        .down { background-color: #e74c3c; box-shadow: 0 0 8px rgba(231, 76, 60, 0.3); }
+        
+        .status-badge { font-family: monospace; font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+        .status-up { color: #2ecc71; background: rgba(46, 204, 113, 0.1); }
+        .status-down { color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+    </style>
+</head>
+<body>
+    <h1>gemini's the goat</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Host</th>
+                <th>Current Status</th>
+                <th>History (Hover for Time)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for name, results in data.items() %}
+            <tr>
+                <td style="font-weight: bold;">{{ name }}</td>
+                <td><code>{{ results[0].host if results else "---" }}</code></td>
+                <td>
+                    {% if results %}
+                        {% set latest = results[0] %}
+                        <span class="status-badge {{ 'status-up' if latest.status else 'status-down' }}">
+                            {{ 'UP' if latest.status else 'DOWN' }}-{{ latest.timestamp.strftime('%H:%M:%S') }}
+                        </span>
+                    {% else %}
+                        <span class="status-badge" style="color: #666;">WAITING...</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="pip-container">
+                        {% for r in results %}
+                            <div class="pip {{ 'up' if r.status else 'down' }}" 
+                                 title="Recorded at: {{ r.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
