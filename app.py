@@ -38,6 +38,7 @@ def run_scoring_round():
                 check_obj = futures[future]
                 try:
                     success = future.result()
+                    
                     # Write to Database
                     new_result = ScoreResult(
                         check_name=check_obj.name,

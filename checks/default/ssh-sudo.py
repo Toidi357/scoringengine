@@ -46,6 +46,7 @@ def run(host, metadata):
                 return True
             else:
                 logger.info(f"Check Failed: [{host}] - Sudo command failed.")
+                return False
 
     except exceptions.CommandTimedOut:
         logger.info(f"Check Failed: [{host}] - Command timed out.")

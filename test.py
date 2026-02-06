@@ -1,14 +1,15 @@
-import requests
-import json
+import smbclient
+share = 'share'
+credentials = 'SIXSEVEN\\scoring:Pa$$w0rd10'
+file = 'images.jpg'
 
-url = f'http://192.168.100.42/api/generate'
 
-data = json.dumps({
-            "model": "tinyllama",
-            "prompt": "Hi how ya doing",
-            "stream": False
-        })
+username, password = credentials.split(":")
 
-r = requests.post(url, data=data, timeout=10)
 
-print(r.text)
+
+smbclient.register_session('192.168.100.30', username=username, password=password, connection_timeout=10)
+
+dir_contents = smbclient.listdir(f"\\\\192.168.100.30\\{share}")
+
+print(type(dir_contents))

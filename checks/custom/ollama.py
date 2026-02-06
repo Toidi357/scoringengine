@@ -28,9 +28,11 @@ def run(host, metadata):
 
     except requests.exceptions.Timeout as e:
         logger.info(f"Check Failed: [{host}] - Timeout: {e}")
+        return False
     except requests.exceptions.RequestException as e:
         # Handle other potential requests errors (e.g., ConnectionError)
         logger.info(f"Check Failed: [{host}] - Exception: {str(e)}")
+        return False
     except Exception as e:
         logger.info(f"Check Failed: [{host}] - Exception: {str(e)}")
         return False
