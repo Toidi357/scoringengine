@@ -1,0 +1,7 @@
+fabric
+termcolor
+requests
+flask
+Flask-SQLAlchemy
+apscheduler
+colorama
