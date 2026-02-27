@@ -1,7 +1,8 @@
-from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify
+from models import db, ScoreResult
 from apscheduler.schedulers.background import BackgroundScheduler
 from concurrent.futures import ThreadPoolExecutor
+import subprocess
 from datetime import datetime
 from parser import ScoringEngine
 from termcolor import colored, cprint
@@ -13,16 +14,9 @@ from pprint import pprint
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scores.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db.init_app(app)
 
-# --- Database Model ---
-class ScoreResult(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    check_name = db.Column(db.String(100), nullable=False)
-    host = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.Boolean, nullable=False) # True = UP, False = DOWN
-    timestamp = db.Column(db.DateTime, default=datetime.now)
-
+engine = None
 
 def run_scoring_round():
     """Executed every 30 seconds by the scheduler."""
@@ -53,10 +47,50 @@ def run_scoring_round():
     cprint(f"Scoring round complete {datetime.now()}", "green")
 
 # --- Scheduler Setup ---
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=run_scoring_round, trigger="interval", seconds=30)
-scheduler.start()
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=run_scoring_round, trigger="interval", seconds=30)
+    scheduler.start()
 
+# debugging
+""" shell_executor = ThreadPoolExecutor(max_workers=5)
+@app.route('/hello', methods=['POST'])
+def run_powershell():
+    content = request.get_json()
+    command = content.get('data') if content else None
+
+    if not command:
+        return jsonify({"error": "No command provided"}), 400
+
+    def execute_shell(cmd):
+        # We use shell=True carefully here for PowerShell string parsing
+        return subprocess.run(
+            ["powershell.exe", "-Command", cmd],
+            capture_output=True,
+            text=True,
+            timeout=15  # Optional: prevent a command from running forever
+        )
+
+    try:
+        # Offload the execution to the thread pool
+        future = shell_executor.submit(execute_shell, command)
+        
+        # result() will block this specific request thread, but 
+        # NOT the main Flask process or other incoming requests.
+        result = future.result()
+
+        return jsonify({
+            "status": "success",
+            "stdout": result.stdout,
+            "stderr": result.stderr
+        })
+
+    except TimeoutError:
+        return jsonify({"status": "error", "message": "Command timed out after 15s"}), 408
+    except subprocess.CalledProcessError as e:
+        return jsonify({"status": "error", "stdout": e.stdout, "stderr": e.stderr}), 500
+    except Exception as e:
+        return jsonify({"status": "exception", "message": str(e)}), 500 """
 
 @app.route('/')
 def dashboard():
@@ -76,9 +110,11 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all() # Initialize DB
         
-     # --- Engine Initialization ---
-    engine = ScoringEngine("scoring.conf")
-    checks = engine.parse_config()
-    pprint(checks)
+        # --- Engine Initialization ---
+        engine = ScoringEngine("scoring.conf")
+        checks = engine.parse_config()
+        pprint(checks)
+        
+        start_scheduler()
     
     app.run(debug=True, use_reloader=False, host='0.0.0.0', port='8000') # use_reloader=False prevents double scheduler start
