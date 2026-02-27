@@ -4,6 +4,9 @@ from termcolor import colored, cprint
 from colorama import init
 init()
 
+# Suppress the warning using the vendored urllib3 in requests
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
 def run(host, metadata):
     """
     This check requests a given webpage over http port 80, and ensures response code begins with 2 or 3

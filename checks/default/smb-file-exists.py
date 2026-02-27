@@ -23,6 +23,7 @@ def run(host, metadata):
     
 
     try:
+        smbclient.reset_connection_cache()
         smbclient.register_session(host, username=username, password=password, connection_timeout=10)
 
         dir_contents = smbclient.listdir(f"\\\\{host}\\{share}")

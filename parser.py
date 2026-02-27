@@ -83,7 +83,7 @@ class ScoringEngine:
         if not os.path.exists(self.config_path):
             raise FileNotFoundError("Config file missing.")
 
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(interpolation=None)
         config.read(self.config_path)
 
         for section in config.sections():

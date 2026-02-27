@@ -11,8 +11,10 @@ def run(host, metadata):
     
     Attempts to connect to a host via SSH using Fabric.
     Expected metadata['credentials'] format: "DOMAIN\\username:password" or "username:password"
+    Optional metadata: port
     """
     creds_raw = metadata.get('credentials', '')
+    port = metadata.get('port', 22)
     
     if ':' not in creds_raw:
         cprint(f"{host} SSH-default: Invalid credentials format in config.", "red")
@@ -37,6 +39,7 @@ def run(host, metadata):
                 "auth_timeout": 7
             },
             "connect_timeout": 7,
+            "port": port
         }
 
         with Connection(**conn_params) as c:
